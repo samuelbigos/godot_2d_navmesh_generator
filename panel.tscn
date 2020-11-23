@@ -12,31 +12,59 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="HSplitContainer" type="HSplitContainer" parent="."]
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_left = 4.0
-margin_top = 4.0
-margin_right = -6.0
-margin_bottom = -4.0
-split_offset = 60
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+margin_right = 204.0
+margin_bottom = 20.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="HSplitContainer" type="HSplitContainer" parent="HSplitContainer"]
-margin_right = 871.0
-margin_bottom = 112.0
+[node name="TextureRect" type="TextureRect" parent="HBoxContainer"]
+margin_right = 128.0
+margin_bottom = 128.0
+rect_min_size = Vector2( 128, 128 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+texture = ExtResource( 3 )
+expand = true
+stretch_mode = 1
 
-[node name="Button" type="Button" parent="HSplitContainer/HSplitContainer"]
-margin_right = 71.0
-margin_bottom = 112.0
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+margin_left = 132.0
+margin_right = 432.0
+margin_bottom = 128.0
+
+[node name="Button" type="Button" parent="HBoxContainer/VBoxContainer"]
+margin_right = 300.0
+margin_bottom = 20.0
+rect_min_size = Vector2( 300, 0 )
 text = "Generate"
 
-[node name="TextureRect" type="TextureRect" parent="HSplitContainer/HSplitContainer"]
-margin_left = 83.0
-margin_right = 871.0
-margin_bottom = 112.0
+[node name="AgentRadius" type="HBoxContainer" parent="HBoxContainer/VBoxContainer"]
+margin_top = 24.0
+margin_right = 300.0
+margin_bottom = 40.0
+
+[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer/AgentRadius"]
+margin_top = 1.0
+margin_right = 83.0
+margin_bottom = 15.0
+text = "Agent Radius"
+
+[node name="HSlider" type="HSlider" parent="HBoxContainer/VBoxContainer/AgentRadius"]
+margin_left = 87.0
+margin_right = 288.0
+margin_bottom = 16.0
+size_flags_horizontal = 3
+min_value = 1.0
+value = 1.0
+
+[node name="Label2" type="Label" parent="HBoxContainer/VBoxContainer/AgentRadius"]
+margin_left = 292.0
+margin_top = 1.0
+margin_right = 300.0
+margin_bottom = 15.0
+text = "1"
 
 [node name="Viewport" type="Viewport" parent="."]
 transparent_bg = true
@@ -58,4 +86,4 @@ margin_right = 40.0
 margin_bottom = 40.0
 texture = ExtResource( 3 )
 expand = true
-[connection signal="pressed" from="HSplitContainer/HSplitContainer/Button" to="." method="_on_Button_pressed"]
+[connection signal="pressed" from="HBoxContainer/VBoxContainer/Button" to="." method="_on_Button_pressed"]

@@ -35,15 +35,9 @@ void fragment()
 		}
 	}
 	
-	if(u_dist_threshold < far && u_dist_threshold > close)
-	{
-		COLOR = vec4(1.0, 0.0, 0.7, 1.0);
-	}
+	float threshold = u_dist_threshold / (1.0 / SCREEN_PIXEL_SIZE.y);
+	if(pix.r > threshold)
+		COLOR = vec4(vec3(0.0), 1.0);
 	else
-	{
-		if(pix.r > u_dist_threshold)
-			COLOR = vec4(vec3(1.0), 1.0);
-		else
-			COLOR = vec4(vec3(0.0), 1.0);
-	}
+		COLOR = vec4(vec3(1.0), 1.0);
 }
