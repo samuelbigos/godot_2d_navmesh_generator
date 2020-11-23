@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+
+[ext_resource path="res://addons/navigation2d_generator/shaders/JumpFloodPass.shader" type="Shader" id=1]
+
+[resource]
+shader = ExtResource( 1 )
+shader_param/u_offset = 0.0
+shader_param/u_level = 0.0
+shader_param/u_max_steps = 0.0

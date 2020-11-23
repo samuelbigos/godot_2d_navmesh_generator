@@ -1,0 +1,61 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://addons/navigation2d_generator/panel.gd" type="Script" id=1]
+[ext_resource path="res://addons/navigation2d_generator/assets/1px.png" type="Texture" id=3]
+
+[node name="Panel" type="Control"]
+margin_right = 881.0
+margin_bottom = 120.0
+rect_min_size = Vector2( 400, 120 )
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="HSplitContainer" type="HSplitContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 4.0
+margin_right = -6.0
+margin_bottom = -4.0
+split_offset = 60
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="HSplitContainer" type="HSplitContainer" parent="HSplitContainer"]
+margin_right = 871.0
+margin_bottom = 112.0
+
+[node name="Button" type="Button" parent="HSplitContainer/HSplitContainer"]
+margin_right = 71.0
+margin_bottom = 112.0
+text = "Generate"
+
+[node name="TextureRect" type="TextureRect" parent="HSplitContainer/HSplitContainer"]
+margin_left = 83.0
+margin_right = 871.0
+margin_bottom = 112.0
+
+[node name="Viewport" type="Viewport" parent="."]
+transparent_bg = true
+
+[node name="SwapA" type="Viewport" parent="."]
+render_target_v_flip = true
+
+[node name="TextureRect" type="TextureRect" parent="SwapA"]
+margin_right = 40.0
+margin_bottom = 40.0
+texture = ExtResource( 3 )
+expand = true
+
+[node name="SwapB" type="Viewport" parent="."]
+render_target_v_flip = true
+
+[node name="TextureRect" type="TextureRect" parent="SwapB"]
+margin_right = 40.0
+margin_bottom = 40.0
+texture = ExtResource( 3 )
+expand = true
+[connection signal="pressed" from="HSplitContainer/HSplitContainer/Button" to="." method="_on_Button_pressed"]

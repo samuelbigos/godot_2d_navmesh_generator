@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=2]
+
+[ext_resource path="res://addons/navigation2d_generator/shaders/VoronoiSeed.shader" type="Shader" id=1]
+
+[sub_resource type="ViewportTexture" id=1]
+
+[resource]
+shader = ExtResource( 1 )
+shader_param/u_input_tex = SubResource( 1 )
