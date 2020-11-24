@@ -30,10 +30,20 @@ func setup(object):
 	swap_rtts.append(get_node("SwapA"))
 	swap_rtts.append(get_node("SwapB"))
 	
+	reset()
+		
+func reset():
+	for child in $Viewport.get_children():
+		child.queue_free()
+		$Viewport.remove_child(child)
+		
+	node_pool.clear()
 	for i in range(0, 100):
 		var node = Node2D.new()
 		node_pool.append(node)
 		$Viewport.add_child(node)
+		
+	nodes_used = 0
 	
 func get_rtt():
 	var ret =  swap_rtts[current_swap]
@@ -48,10 +58,11 @@ func _process(delta):
 	$HBoxContainer/VBoxContainer/AgentRadius/Label2.text = "%d" % $HBoxContainer/VBoxContainer/AgentRadius/HSlider.value
 		
 func generate():
-	var viewport_size = Vector2(512, 512)
+	
 	var input = $Viewport
 	var preview = $HBoxContainer/TextureRect
 	preview.rect_size = Vector2(128, 128)
+	preview.flip_v = true
 	var agent_radius = $HBoxContainer/VBoxContainer/AgentRadius/HSlider.value
 	
 	var scene_tree = get_tree().get_edited_scene_root()
@@ -59,6 +70,10 @@ func generate():
 	get_all_nodes_recursive("CollisionShape2D", scene_tree, collision_shape_list)
 	var collision_polygon_list = []
 	get_all_nodes_recursive("CollisionPolygon2D", scene_tree, collision_polygon_list)
+	
+	var first = true
+	var space_min = Vector2()
+	var space_max = Vector2()
 	
 	for node in collision_shape_list:
 		if not node.visible:
@@ -71,6 +86,44 @@ func generate():
 		shape_canvas.transform = collision_shape.transform
 		shape.draw(shape_canvas.get_canvas_item(), Color.black)
 		
+		var radius = 0.0
+		if shape.is_class("CapsuleShape2D"):
+			var s = shape as CapsuleShape2D
+			radius = s.height * 0.5 + s.radius
+		elif shape.is_class("CircleShape2D"):
+			var s = shape as CircleShape2D
+			radius = s.radius
+		elif shape.is_class("ConcavePolygonShape2D"):
+			var s = shape as ConcavePolygonShape2D
+			for vert in s.segments:
+				radius = max(radius, vert.length())
+		elif shape.is_class("ConvexPolygonShape2D"):
+			var s = shape as ConvexPolygonShape2D
+			for vert in s.points:
+				radius = max(radius, vert.length())
+		elif shape.is_class("LineShape2D"):
+			printerr("LineShape2D is not supported.")
+		elif shape.is_class("RayShape2D"):
+			printerr("RayShape2D is not supported.")
+		elif shape.is_class("RectangleShape2D"):
+			var s = shape as RectangleShape2D
+			radius = s.extents.length()
+		elif shape.is_class("SegmentShape2D"):
+			var s = shape as SegmentShape2D
+			radius = max(s.a.length(), s.b.length())
+		else:
+			printerr("Unknown shape!")
+			
+		if first:
+			space_min = shape_canvas.position - Vector2(radius, radius)
+			space_max = shape_canvas.position + Vector2(radius, radius)
+			first = false
+		else:
+			space_min.x = min(space_min.x, shape_canvas.position.x - radius)
+			space_min.y = min(space_min.y, shape_canvas.position.y - radius)
+			space_max.x = max(space_max.x, shape_canvas.position.x + radius)
+			space_max.y = max(space_max.y, shape_canvas.position.y + radius)
+		
 	for node in collision_polygon_list:
 		if not node.visible:
 			continue
@@ -79,7 +132,43 @@ func generate():
 		polygon.polygon = (node as CollisionPolygon2D).polygon
 		polygon.transform = (node as CollisionPolygon2D).transform
 		input.add_child(polygon)
-			
+		
+		var radius = 0.0
+		for vert in polygon.polygon:
+			radius = max(radius, vert.length())
+				
+		if first:
+			space_min = polygon.position - Vector2(radius, radius)
+			space_max = polygon.position + Vector2(radius, radius)
+			first = false
+		else:
+			space_min.x = min(space_min.x, polygon.position.x - radius)
+			space_min.y = min(space_min.y, polygon.position.y - radius)
+			space_max.x = max(space_max.x, polygon.position.x + radius)
+			space_max.y = max(space_max.y, polygon.position.y + radius)
+		
+	var margin = Vector2(10, 10) + Vector2(agent_radius, agent_radius)
+	var viewport_size = space_max - space_min + margin
+	viewport_size.x = int(max(viewport_size.x, viewport_size.y))
+	viewport_size.y = int(viewport_size.x)
+	var space_offset = space_min - (margin * 0.5)
+	
+	var camera_transform = Transform2D(Vector2(1.0, 0.0), Vector2(0.0, 1.0), -space_offset)
+	input.canvas_transform = camera_transform
+	
+	var space = PoolVector2Array()
+	space.append(space_offset + Vector2(0.0, 0.0))
+	space.append(space_offset + Vector2(viewport_size.x, 0.0))
+	space.append(space_offset + Vector2(viewport_size.x, viewport_size.y))
+	space.append(space_offset + Vector2(0.0, viewport_size.y))
+	
+	poly_to_edit.clear_outlines()
+	poly_to_edit.clear_polygons()
+	poly_to_edit.add_outline(space)
+	poly_to_edit.make_polygons_from_outlines()
+	
+	preview.rect_size = viewport_size
+				
 	input.size = viewport_size
 	input.render_target_update_mode = Viewport.UPDATE_ONCE
 	input.update_worlds()
@@ -89,7 +178,6 @@ func generate():
 	preview.texture = input.get_texture()
 	
 	for child in input.get_children():
-		print(child)
 		child.queue_free()
 		input.remove_child(child)
 	
@@ -158,7 +246,7 @@ func generate():
 	yield(get_tree(), "idle_frame")
 	
 	preview.texture = rtt.get_texture()
-	
+
 	var image = rtt.get_texture().get_data()
 	image.flip_y()
 	var width = image.get_width()
@@ -184,13 +272,17 @@ func generate():
 			# check if that pixel is on a boundary, and if so, generate a vector array of that boundary.
 			if boundary_data[x][y] == 1:
 				var vec_array = gen_verts_from_start(Vector2(x, y), width, height, boundary_data)
+				vec_array = optimise_boundary(vec_array)
 				vec_arrays.append(vec_array)
 		
-	poly_to_edit.clear_outlines()
-	poly_to_edit.clear_polygons()
 	for vec_array in vec_arrays:
+		for i in range(0, vec_array.size()):
+			vec_array[i] += space_offset
 		poly_to_edit.add_outline(vec_array)
+		
 	poly_to_edit.make_polygons_from_outlines()
+	
+	reset()
 	
 func gen_verts_from_start(start, width, height, data):
 	
@@ -209,13 +301,8 @@ func gen_verts_from_start(start, width, height, data):
 		
 	if query(start + Vector2(0, 1), data) == 0:
 		dir = V_LEFT
-		
-	#print(start)
-	#print(dir)
-	#data[start.x][start.y] = 5
-	#print_output(data)
 	
-	var maxrange = 999
+	var maxrange = 99999
 	var current = start
 	for i in range(0, maxrange):
 		
@@ -294,33 +381,68 @@ func gen_verts_from_start(start, width, height, data):
 		if current != last:
 			vec_array.append(current)
 			
-		if current == start:
+		# if we got back round to the start, finish.
+		# it's possible the first pixel doesn't move us, so make sure we moved a bit first.
+		if current == start and i > 1:
 			break
-			
-		#print("%d post - [%d, %d] - [%d, %d]" % [i, current.x, current.y, dir.x, dir.y])
-		
-		#data[current.x][current.y] = 5
-		#if i == (maxrange - 1):
-		#	data[current.x][current.y] = 3
-		#	print_output(data)
 			
 	# remove this shape from data so we don't process it again
 	flood_fill(start, data)
-	#print_output(data)
 		
 	return vec_array
+	
+func optimise_boundary(boundary):
+	var threshold = 0.999999
+	var size = boundary.size()
+	var new = []
+	var i = 0
+	while true:
+		if i >= size - 1:
+			break
+			
+		new.append(boundary[i])
+		var v_a = boundary[i]
+		i += 1
+		var v_b = boundary[i]
+		var dir_a = (v_b - v_a).normalized()
+		
+		for j in range(i, size - 1):
+			v_a = boundary[j]
+			v_b = boundary[j + 1]
+			var dir_b = (v_b - v_a).normalized()
+			var dot = dir_a.dot(dir_b)
+			i = j
+			if dot < threshold:
+				break
+
+	return new
 	
 func query(coord, data):
 	return data[coord.x][coord.y]
 	
 func flood_fill(coord, data):
-	if data[coord.x][coord.y] == 0:
-		return
+	if data[coord.x][coord.y] == 0: return
 	data[coord.x][coord.y] = 0
-	flood_fill(coord + Vector2(0, 1), data)
-	flood_fill(coord + Vector2(0, -1), data)
-	flood_fill(coord + Vector2(1, 0), data)
-	flood_fill(coord + Vector2(-1, 0), data)
+	var queue = []
+	queue.append(coord)
+	while queue.size() > 0:
+		var node = queue.pop_front()
+		var xy = node + Vector2(0, 1)
+		if data[xy.x][xy.y] == 1:
+			data[xy.x][xy.y] = 0
+			queue.append(xy)
+		xy = node + Vector2(0, -1)
+		if data[xy.x][xy.y] == 1:
+			data[xy.x][xy.y] = 0
+			queue.append(xy)
+		xy = node + Vector2(1, 0)
+		if data[xy.x][xy.y] == 1:
+			data[xy.x][xy.y] = 0
+			queue.append(xy)
+		xy = node + Vector2(-1, 0)
+		if data[xy.x][xy.y] == 1:
+			data[xy.x][xy.y] = 0
+			queue.append(xy)
 
 func print_output(data):
 	var output_string = ""
