@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/1px.png-d69a80ff9a7d591dab55b32433cc9ecc.stex"
+path="res://.import/1px.png-b484b150056c3a22fbaff4235e727cc3.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/navigation2d_generator/assets/1px.png"
-dest_files=[ "res://.import/1px.png-d69a80ff9a7d591dab55b32433cc9ecc.stex" ]
+source_file="res://addons/godot_2d_navmesh_generator/assets/1px.png"
+dest_files=[ "res://.import/1px.png-b484b150056c3a22fbaff4235e727cc3.stex" ]
 
 [params]
 

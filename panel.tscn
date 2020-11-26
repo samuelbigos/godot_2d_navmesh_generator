@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=2]
 
-[ext_resource path="res://addons/navigation2d_generator/panel.gd" type="Script" id=1]
-[ext_resource path="res://addons/navigation2d_generator/assets/1px.png" type="Texture" id=3]
+[ext_resource path="res://addons/godot_2d_navmesh_generator/panel.gd" type="Script" id=1]
+[ext_resource path="res://addons/godot_2d_navmesh_generator/assets/1px.png" type="Texture" id=3]
 
 [node name="Panel" type="Control"]
 margin_bottom = 150.0
