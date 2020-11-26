@@ -4,54 +4,43 @@
 [ext_resource path="res://addons/navigation2d_generator/assets/1px.png" type="Texture" id=3]
 
 [node name="Panel" type="Control"]
-margin_right = 881.0
-margin_bottom = 120.0
-rect_min_size = Vector2( 400, 120 )
+margin_bottom = 150.0
+rect_min_size = Vector2( 0, 150 )
 script = ExtResource( 1 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
-margin_right = 204.0
-margin_bottom = 20.0
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+margin_right = 300.0
+margin_bottom = 40.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="TextureRect" type="TextureRect" parent="HBoxContainer"]
-margin_right = 128.0
-margin_bottom = 128.0
-rect_min_size = Vector2( 128, 128 )
-size_flags_horizontal = 0
-size_flags_vertical = 0
-texture = ExtResource( 3 )
-expand = true
-stretch_mode = 1
-
-[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
-margin_left = 132.0
-margin_right = 432.0
-margin_bottom = 128.0
-
-[node name="Button" type="Button" parent="HBoxContainer/VBoxContainer"]
+[node name="Button" type="Button" parent="VBoxContainer"]
 margin_right = 300.0
 margin_bottom = 20.0
 rect_min_size = Vector2( 300, 0 )
 text = "Generate"
 
-[node name="AgentRadius" type="HBoxContainer" parent="HBoxContainer/VBoxContainer"]
+[node name="ProgressBar" type="ProgressBar" parent="VBoxContainer"]
 margin_top = 24.0
 margin_right = 300.0
-margin_bottom = 40.0
+margin_bottom = 38.0
 
-[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer/AgentRadius"]
+[node name="AgentRadius" type="HBoxContainer" parent="VBoxContainer"]
+margin_top = 42.0
+margin_right = 300.0
+margin_bottom = 58.0
+
+[node name="Label" type="Label" parent="VBoxContainer/AgentRadius"]
 margin_top = 1.0
 margin_right = 83.0
 margin_bottom = 15.0
 text = "Agent Radius"
 
-[node name="HSlider" type="HSlider" parent="HBoxContainer/VBoxContainer/AgentRadius"]
+[node name="HSlider" type="HSlider" parent="VBoxContainer/AgentRadius"]
 margin_left = 87.0
 margin_right = 288.0
 margin_bottom = 16.0
@@ -60,12 +49,24 @@ min_value = 1.0
 max_value = 50.0
 value = 1.0
 
-[node name="Label2" type="Label" parent="HBoxContainer/VBoxContainer/AgentRadius"]
+[node name="Label2" type="Label" parent="VBoxContainer/AgentRadius"]
 margin_left = 292.0
 margin_top = 1.0
 margin_right = 300.0
 margin_bottom = 15.0
 text = "1"
+
+[node name="TextureRect" type="TextureRect" parent="VBoxContainer"]
+visible = false
+margin_top = 62.0
+margin_right = 128.0
+margin_bottom = 190.0
+rect_min_size = Vector2( 128, 128 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+texture = ExtResource( 3 )
+expand = true
+stretch_mode = 1
 
 [node name="Viewport" type="Viewport" parent="."]
 transparent_bg = true
@@ -87,4 +88,4 @@ margin_right = 40.0
 margin_bottom = 40.0
 texture = ExtResource( 3 )
 expand = true
-[connection signal="pressed" from="HBoxContainer/VBoxContainer/Button" to="." method="_on_Button_pressed"]
+[connection signal="pressed" from="VBoxContainer/Button" to="." method="_on_Button_pressed"]

@@ -17,9 +17,18 @@ var current_swap = 0
 var poly_to_edit = null
 
 var generate_clicked = false
+var generating = false
 var did_populate = false
+var vector_arrays = []
 var node_pool = []
 var nodes_used = 0
+var space_offset
+var worker_thread = null
+var worker_complete = false
+var worker_progress = 0.0
+var gpu_progress = 0.0
+var total_progress = 0.0
+var worker_progress_mutex = null
 
 
 func setup(object):
@@ -44,6 +53,18 @@ func reset():
 		$Viewport.add_child(node)
 		
 	nodes_used = 0
+	generating = false
+	worker_progress = 0.0
+	gpu_progress = 0.0
+	total_progress = 0.0
+	if worker_progress_mutex:
+		worker_progress_mutex.unlock()
+	if worker_thread:
+		worker_thread.wait_to_finish()
+	worker_thread = null
+	worker_progress_mutex = null
+	worker_complete = false
+	vector_arrays = []
 	
 func get_rtt():
 	var ret =  swap_rtts[current_swap]
@@ -52,18 +73,32 @@ func get_rtt():
 	
 func _process(delta):
 	if generate_clicked:
-		generate()
+		generate();
 		generate_clicked = false
+		generating = true
 		
-	$HBoxContainer/VBoxContainer/AgentRadius/Label2.text = "%d" % $HBoxContainer/VBoxContainer/AgentRadius/HSlider.value
+	if generating:
+		var bar = $VBoxContainer/ProgressBar
+		var cpu_progress = 0.0
+		if worker_progress_mutex != null and worker_thread != null:
+			worker_progress_mutex.lock()
+			cpu_progress = worker_progress
+			worker_progress_mutex.unlock()
+		
+		bar.value = ((gpu_progress * 0.1) + (cpu_progress * 0.9)) * bar.max_value
+		
+		if worker_complete:
+			finish_gen()
+			reset()
+		
+	$VBoxContainer/AgentRadius/Label2.text = "%d" % $VBoxContainer/AgentRadius/HSlider.value
 		
 func generate():
 	
 	var input = $Viewport
-	var preview = $HBoxContainer/TextureRect
-	preview.rect_size = Vector2(128, 128)
+	var preview = $VBoxContainer/TextureRect
 	preview.flip_v = true
-	var agent_radius = $HBoxContainer/VBoxContainer/AgentRadius/HSlider.value
+	var agent_radius = $VBoxContainer/AgentRadius/HSlider.value
 	
 	var scene_tree = get_tree().get_edited_scene_root()
 	var collision_shape_list = []
@@ -151,7 +186,7 @@ func generate():
 	var viewport_size = space_max - space_min + margin
 	viewport_size.x = int(max(viewport_size.x, viewport_size.y))
 	viewport_size.y = int(viewport_size.x)
-	var space_offset = space_min - (margin * 0.5)
+	space_offset = space_min - (margin * 0.5)
 	
 	var camera_transform = Transform2D(Vector2(1.0, 0.0), Vector2(0.0, 1.0), -space_offset)
 	input.canvas_transform = camera_transform
@@ -168,14 +203,16 @@ func generate():
 	poly_to_edit.make_polygons_from_outlines()
 	
 	preview.rect_size = viewport_size
+	gpu_progress = 0.1
 				
 	input.size = viewport_size
 	input.render_target_update_mode = Viewport.UPDATE_ONCE
 	input.update_worlds()
-	yield(get_tree(), "idle_frame")
-	yield(get_tree(), "idle_frame")
 	
+	yield(get_tree(), "idle_frame")
 	preview.texture = input.get_texture()
+	gpu_progress = 0.2
+	yield(get_tree(), "idle_frame")
 	
 	for child in input.get_children():
 		child.queue_free()
@@ -189,10 +226,11 @@ func generate():
 	rtt.size = viewport_size
 	rtt.render_target_update_mode = Viewport.UPDATE_ONCE
 	rtt.update_worlds()
-	yield(get_tree(), "idle_frame")
-	yield(get_tree(), "idle_frame")
 	
+	yield(get_tree(), "idle_frame")
 	preview.texture = rtt.get_texture()
+	gpu_progress = 0.3
+	yield(get_tree(), "idle_frame")	
 	
 	var passes = ceil(log(max(viewport_size.x, viewport_size.y)) / log(2.0))
 	for i in range(0, passes):
@@ -212,10 +250,11 @@ func generate():
 		rtt.size = viewport_size
 		rtt.render_target_update_mode = Viewport.UPDATE_ONCE
 		rtt.update_worlds()
+		
 		yield(get_tree(), "idle_frame")
-		yield(get_tree(), "idle_frame")
-	
 		preview.texture = rtt.get_texture()
+		gpu_progress = 0.3 + (float(i) / float(passes)) * 0.6
+		yield(get_tree(), "idle_frame")
 	
 	var voronoi_output = rtt.get_texture()
 	rtt = get_rtt()
@@ -226,10 +265,11 @@ func generate():
 	
 	rtt.render_target_update_mode = Viewport.UPDATE_ONCE
 	rtt.update_worlds()
+	
 	yield(get_tree(), "idle_frame")
-	yield(get_tree(), "idle_frame")
-		
+	gpu_progress = 0.9
 	preview.texture = rtt.get_texture()
+	yield(get_tree(), "idle_frame")
 
 	var distance_field = rtt.get_texture()
 	var prev_rtt_vflip = rtt.render_target_v_flip
@@ -242,11 +282,12 @@ func generate():
 	
 	rtt.render_target_update_mode = Viewport.UPDATE_ONCE
 	rtt.update_worlds()
+	
 	yield(get_tree(), "idle_frame")
+	gpu_progress = 1.0
+	preview.texture = rtt.get_texture()
 	yield(get_tree(), "idle_frame")
 	
-	preview.texture = rtt.get_texture()
-
 	var image = rtt.get_texture().get_data()
 	image.flip_y()
 	var width = image.get_width()
@@ -265,6 +306,41 @@ func generate():
 			
 	var vec_arrays = []
 	
+	var worker_data = {}
+	worker_data["width"] = width
+	worker_data["height"] = height
+	worker_data["data"] = boundary_data
+	worker_data["output"] = vec_arrays
+	worker_data["self"] = self
+	worker_progress_mutex = Mutex.new()
+	worker_thread = Thread.new()
+	worker_thread.start(self, "worker_job", worker_data)
+	worker_complete = false
+	
+func finish_gen():
+	for vec_array in vector_arrays:
+		for i in range(0, vec_array.size()):
+			vec_array[i] += space_offset
+		poly_to_edit.add_outline(vec_array)
+		
+	poly_to_edit.make_polygons_from_outlines()
+	
+func worker_complete(data):
+	vector_arrays = data
+	worker_complete = true
+	
+func worker_progress(progress):
+	worker_progress_mutex.lock()
+	worker_progress = progress
+	worker_progress_mutex.unlock()
+	
+func worker_job(worker_data):
+	var width = worker_data["width"]
+	var height = worker_data["width"]
+	var boundary_data = worker_data["data"]
+	var vec_arrays = worker_data["output"]
+	var parent_self = worker_data["self"]
+		
 	# for every pixel in the image
 	for x in range(0, width):
 		for y in range(0, height):
@@ -274,15 +350,11 @@ func generate():
 				var vec_array = gen_verts_from_start(Vector2(x, y), width, height, boundary_data)
 				vec_array = optimise_boundary(vec_array)
 				vec_arrays.append(vec_array)
-		
-	for vec_array in vec_arrays:
-		for i in range(0, vec_array.size()):
-			vec_array[i] += space_offset
-		poly_to_edit.add_outline(vec_array)
-		
-	poly_to_edit.make_polygons_from_outlines()
-	
-	reset()
+			
+			var progress = float((float(x * height) + float(y)) / float(width * height))
+			parent_self.worker_progress(progress)
+				
+	parent_self.worker_complete(vec_arrays)
 	
 func gen_verts_from_start(start, width, height, data):
 	
@@ -307,9 +379,8 @@ func gen_verts_from_start(start, width, height, data):
 	for i in range(0, maxrange):
 		
 		var last = current
+		var error = false
 		
-		#print("%d pre - [%d, %d] - [%d, %d]" % [i, current.x, current.y, dir.x, dir.y])
-
 		# up: [0][1]
 		if dir == V_UP:
 
@@ -317,7 +388,7 @@ func gen_verts_from_start(start, width, height, data):
 			if query(current + Vector2(-1, -1), data) == 0 and query(current + Vector2(0, -1), data) == 0:
 				dir = V_RIGHT
 			# turn left
-			elif query(current + Vector2(-1, -1), data) == 1 and query(current + Vector2(0, -1), data) == 1:
+			elif query(current + Vector2(-1, -1), data) == 1:
 				dir = V_LEFT
 				current = current + Vector2(-1, -1)
 			# continue up
@@ -326,6 +397,7 @@ func gen_verts_from_start(start, width, height, data):
 				current = current + Vector2(0, -1)
 			else:
 				printerr("up - something went wrong.")
+				error = true
 			
 		# right:
 		# [0]
@@ -335,7 +407,7 @@ func gen_verts_from_start(start, width, height, data):
 			if query(current + Vector2(1, -1), data) == 0 and query(current + Vector2(1, 0), data) == 0:
 				dir = V_DOWN
 			# turn up
-			elif query(current + Vector2(1, -1), data) == 1 and query(current + Vector2(1, 0), data) == 1:
+			elif query(current + Vector2(1, -1), data) == 1:
 				dir = V_UP
 				current = current + Vector2(1, -1)
 			# continue right
@@ -344,6 +416,7 @@ func gen_verts_from_start(start, width, height, data):
 				current = current + Vector2(1, 0)
 			else:
 				printerr("right - something went wrong.")
+				error = true
 				
 		# down: [1][0]
 		elif dir == V_DOWN:
@@ -351,7 +424,7 @@ func gen_verts_from_start(start, width, height, data):
 			if query(current + Vector2(0, 1), data) == 0 and query(current + Vector2(1, 1), data) == 0:
 				dir = V_LEFT
 			# turn right
-			elif query(current + Vector2(0, 1), data) == 1 and query(current + Vector2(1, 1), data) == 1:
+			elif query(current + Vector2(1, 1), data) == 1:
 				dir = V_RIGHT
 				current = current + Vector2(1, 1)
 			# continue down
@@ -360,6 +433,7 @@ func gen_verts_from_start(start, width, height, data):
 				current = current + Vector2(0, 1)
 			else:
 				printerr("down - something went wrong.")
+				error = true
 			
 		# left:
 		# [1]
@@ -369,7 +443,7 @@ func gen_verts_from_start(start, width, height, data):
 			if query(current + Vector2(-1, 0), data) == 0 and query(current + Vector2(-1, 1), data) == 0:
 				dir = V_UP
 			# turn down
-			elif query(current + Vector2(-1, 0), data) == 1 and query(current + Vector2(-1, 1), data) == 1:
+			elif query(current + Vector2(-1, 1), data) == 1:
 				dir = V_DOWN
 				current = current + Vector2(-1, 1)
 			elif query(current + Vector2(-1, 0), data) == 1 and query(current + Vector2(-1, 1), data) == 0:
@@ -377,6 +451,11 @@ func gen_verts_from_start(start, width, height, data):
 				current = current + Vector2(-1, 0)
 			else:
 				printerr("left - something went wrong.")
+				error = true
+				
+		if error:
+			print("%d pre - [%d, %d] - [%d, %d]" % [i, current.x, current.y, dir.x, dir.y])
+			break
 				
 		if current != last:
 			vec_array.append(current)
@@ -461,5 +540,17 @@ func get_all_nodes_recursive(type, tree, array):
 		
 		get_all_nodes_recursive(type, child, array)
 
+func shutdown():
+	if worker_progress_mutex:
+		worker_progress_mutex.unlock()
+	if worker_thread:
+		worker_thread.wait_to_finish()
+	
+func _exit_tree():
+	if worker_progress_mutex:
+		worker_progress_mutex.unlock()
+	if worker_thread:
+		worker_thread.wait_to_finish()
+	
 func _on_Button_pressed():
 	generate_clicked = true
