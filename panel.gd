@@ -99,6 +99,7 @@ func generate():
 	var preview = $VBoxContainer/TextureRect
 	preview.flip_v = true
 	var agent_radius = $VBoxContainer/AgentRadius/HSlider.value
+	var exclude_group = $VBoxContainer/ExcludeGroup/LineEdit.text
 	
 	var scene_tree = get_tree().get_edited_scene_root()
 	var collision_shape_list = []
@@ -113,12 +114,14 @@ func generate():
 	for node in collision_shape_list:
 		if not node.visible:
 			continue
+		if node.is_in_group(exclude_group):
+			continue
 			
 		var collision_shape = node as CollisionShape2D
 		var shape = collision_shape.shape as Shape2D
 		var shape_canvas = node_pool[nodes_used]
 		nodes_used += 1
-		shape_canvas.transform = collision_shape.transform
+		shape_canvas.transform = collision_shape.global_transform
 		shape.draw(shape_canvas.get_canvas_item(), Color.black)
 		
 		var radius = 0.0
@@ -149,38 +152,42 @@ func generate():
 		else:
 			printerr("Unknown shape!")
 			
+		var pos = shape_canvas.global_position
 		if first:
-			space_min = shape_canvas.position - Vector2(radius, radius)
-			space_max = shape_canvas.position + Vector2(radius, radius)
+			space_min = pos - Vector2(radius, radius)
+			space_max = pos + Vector2(radius, radius)
 			first = false
 		else:
-			space_min.x = min(space_min.x, shape_canvas.position.x - radius)
-			space_min.y = min(space_min.y, shape_canvas.position.y - radius)
-			space_max.x = max(space_max.x, shape_canvas.position.x + radius)
-			space_max.y = max(space_max.y, shape_canvas.position.y + radius)
+			space_min.x = min(space_min.x, pos.x - radius)
+			space_min.y = min(space_min.y, pos.y - radius)
+			space_max.x = max(space_max.x, pos.x + radius)
+			space_max.y = max(space_max.y, pos.y + radius)
 		
 	for node in collision_polygon_list:
 		if not node.visible:
 			continue
+		if node.is_in_group(exclude_group):
+			continue
 			
 		var polygon = Polygon2D.new()
 		polygon.polygon = (node as CollisionPolygon2D).polygon
-		polygon.transform = (node as CollisionPolygon2D).transform
+		polygon.transform = (node as CollisionPolygon2D).global_transform
 		input.add_child(polygon)
 		
 		var radius = 0.0
 		for vert in polygon.polygon:
 			radius = max(radius, vert.length())
-				
+		
+		var pos = polygon.global_position
 		if first:
-			space_min = polygon.position - Vector2(radius, radius)
-			space_max = polygon.position + Vector2(radius, radius)
+			space_min = pos - Vector2(radius, radius)
+			space_max = pos + Vector2(radius, radius)
 			first = false
 		else:
-			space_min.x = min(space_min.x, polygon.position.x - radius)
-			space_min.y = min(space_min.y, polygon.position.y - radius)
-			space_max.x = max(space_max.x, polygon.position.x + radius)
-			space_max.y = max(space_max.y, polygon.position.y + radius)
+			space_min.x = min(space_min.x, pos.x - radius)
+			space_min.y = min(space_min.y, pos.y - radius)
+			space_max.x = max(space_max.x, pos.x + radius)
+			space_max.y = max(space_max.y, pos.y + radius)
 		
 	var margin = Vector2(10, 10) + Vector2(agent_radius, agent_radius)
 	var viewport_size = space_max - space_min + margin
@@ -270,7 +277,7 @@ func generate():
 	gpu_progress = 0.9
 	preview.texture = rtt.get_texture()
 	yield(get_tree(), "idle_frame")
-
+	
 	var distance_field = rtt.get_texture()
 	var prev_rtt_vflip = rtt.render_target_v_flip
 	rtt = get_rtt()

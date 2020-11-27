@@ -56,11 +56,29 @@ margin_right = 300.0
 margin_bottom = 15.0
 text = "1"
 
+[node name="ExcludeGroup" type="HBoxContainer" parent="VBoxContainer"]
+margin_top = 62.0
+margin_right = 300.0
+margin_bottom = 86.0
+
+[node name="Label" type="Label" parent="VBoxContainer/ExcludeGroup"]
+margin_top = 5.0
+margin_right = 92.0
+margin_bottom = 19.0
+text = "Exclude Group"
+
+[node name="LineEdit" type="LineEdit" parent="VBoxContainer/ExcludeGroup"]
+margin_left = 96.0
+margin_right = 300.0
+margin_bottom = 24.0
+size_flags_horizontal = 3
+text = "ExcludeFromNavmesh"
+
 [node name="TextureRect" type="TextureRect" parent="VBoxContainer"]
 visible = false
-margin_top = 62.0
+margin_top = 90.0
 margin_right = 128.0
-margin_bottom = 190.0
+margin_bottom = 218.0
 rect_min_size = Vector2( 128, 128 )
 size_flags_horizontal = 0
 size_flags_vertical = 0

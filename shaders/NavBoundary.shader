@@ -6,34 +6,7 @@ uniform float u_dist_threshold = 0.0;
 void fragment() 
 {
 	vec4 pix = texture(u_input_tex, UV);
-	
-	float far = 0.0;
-	float close = 1.0;
-	ivec2 v_far = ivec2(0);
-	ivec2 v_close = ivec2(0);
-	
-	for(int x = -1; x <= 1; x++)
-	{
-		for(int y = -1; y <= 1; y++)
-		{
-			if(x == 0 || y == 0)
-				continue;
-			
-			vec2 offset = vec2(float(x), float(y)) * SCREEN_PIXEL_SIZE * 0.5;
-			vec4 sample = texture(u_input_tex, UV + offset);
-			float sample_dist = sample.r;
-			if(sample_dist > far)
-			{
-				far = sample_dist;
-				v_far = ivec2(x, y);
-			}			
-			if(sample_dist < close)
-			{
-				close = sample_dist;
-				v_close = ivec2(x, y);
-			}
-		}
-	}
+	pix /= 2.0;
 	
 	float threshold = u_dist_threshold / (1.0 / SCREEN_PIXEL_SIZE.y);
 	if(pix.r > threshold)
