@@ -1,0 +1,241 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://addons/godot_2d_navmesh_generator/2d_navmesh_generator.gd" type="Script" id=1]
+[ext_resource path="res://addons/godot_2d_navmesh_generator/assets/1px.png" type="Texture" id=2]
+[ext_resource path="res://addons/godot_2d_navmesh_generator/assets/info.png" type="Texture" id=3]
+
+[node name="Panel" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+rect_min_size = Vector2( 0, 200 )
+size_flags_vertical = 2
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Viewport" type="Viewport" parent="."]
+transparent_bg = true
+
+[node name="SwapA" type="Viewport" parent="."]
+render_target_v_flip = true
+
+[node name="TextureRect" type="TextureRect" parent="SwapA"]
+margin_right = 40.0
+margin_bottom = 40.0
+texture = ExtResource( 2 )
+expand = true
+
+[node name="SwapB" type="Viewport" parent="."]
+render_target_v_flip = true
+
+[node name="TextureRect" type="TextureRect" parent="SwapB"]
+margin_right = 40.0
+margin_bottom = 40.0
+texture = ExtResource( 2 )
+expand = true
+
+[node name="HSplitter" type="HSplitContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+dragger_visibility = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="VBoxLeft" type="VBoxContainer" parent="HSplitter"]
+margin_right = 300.0
+margin_bottom = 270.0
+rect_min_size = Vector2( 300, 0 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="AgentRadius" type="HBoxContainer" parent="HSplitter/VBoxLeft"]
+margin_right = 300.0
+margin_bottom = 22.0
+
+[node name="AgentRadiusInfo" type="Button" parent="HSplitter/VBoxLeft/AgentRadius"]
+margin_right = 16.0
+margin_bottom = 22.0
+icon = ExtResource( 3 )
+
+[node name="Label" type="Label" parent="HSplitter/VBoxLeft/AgentRadius"]
+margin_left = 20.0
+margin_top = 4.0
+margin_right = 103.0
+margin_bottom = 18.0
+text = "Agent Radius"
+
+[node name="HSlider" type="HSlider" parent="HSplitter/VBoxLeft/AgentRadius"]
+margin_left = 107.0
+margin_right = 288.0
+margin_bottom = 16.0
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 50.0
+value = 1.0
+
+[node name="Value" type="Label" parent="HSplitter/VBoxLeft/AgentRadius"]
+margin_left = 292.0
+margin_top = 4.0
+margin_right = 300.0
+margin_bottom = 18.0
+text = "1"
+
+[node name="Smoothing" type="HBoxContainer" parent="HSplitter/VBoxLeft"]
+margin_top = 26.0
+margin_right = 300.0
+margin_bottom = 48.0
+
+[node name="SmoothingInfo" type="Button" parent="HSplitter/VBoxLeft/Smoothing"]
+margin_right = 16.0
+margin_bottom = 22.0
+icon = ExtResource( 3 )
+
+[node name="Label" type="Label" parent="HSplitter/VBoxLeft/Smoothing"]
+margin_left = 20.0
+margin_top = 4.0
+margin_right = 88.0
+margin_bottom = 18.0
+text = "Smoothing"
+
+[node name="HSlider" type="HSlider" parent="HSplitter/VBoxLeft/Smoothing"]
+margin_left = 92.0
+margin_right = 288.0
+margin_bottom = 16.0
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.01
+value = 0.5
+
+[node name="Value" type="Label" parent="HSplitter/VBoxLeft/Smoothing"]
+margin_left = 292.0
+margin_top = 4.0
+margin_right = 300.0
+margin_bottom = 18.0
+text = "1"
+
+[node name="Simplify" type="HBoxContainer" parent="HSplitter/VBoxLeft"]
+margin_top = 52.0
+margin_right = 300.0
+margin_bottom = 74.0
+
+[node name="SimplifyInfo" type="Button" parent="HSplitter/VBoxLeft/Simplify"]
+margin_right = 16.0
+margin_bottom = 22.0
+icon = ExtResource( 3 )
+
+[node name="Label" type="Label" parent="HSplitter/VBoxLeft/Simplify"]
+margin_left = 20.0
+margin_top = 4.0
+margin_right = 71.0
+margin_bottom = 18.0
+text = "Simplify"
+
+[node name="HSlider" type="HSlider" parent="HSplitter/VBoxLeft/Simplify"]
+margin_left = 75.0
+margin_right = 288.0
+margin_bottom = 16.0
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.01
+value = 0.5
+
+[node name="Value" type="Label" parent="HSplitter/VBoxLeft/Simplify"]
+margin_left = 292.0
+margin_top = 4.0
+margin_right = 300.0
+margin_bottom = 18.0
+text = "1"
+
+[node name="ExcludeGroup" type="HBoxContainer" parent="HSplitter/VBoxLeft"]
+margin_top = 78.0
+margin_right = 300.0
+margin_bottom = 102.0
+
+[node name="ExcludeGroupInfo" type="Button" parent="HSplitter/VBoxLeft/ExcludeGroup"]
+margin_right = 16.0
+margin_bottom = 24.0
+icon = ExtResource( 3 )
+
+[node name="Label" type="Label" parent="HSplitter/VBoxLeft/ExcludeGroup"]
+margin_left = 20.0
+margin_top = 5.0
+margin_right = 112.0
+margin_bottom = 19.0
+text = "Exclude Group"
+
+[node name="LineEdit" type="LineEdit" parent="HSplitter/VBoxLeft/ExcludeGroup"]
+margin_left = 116.0
+margin_right = 300.0
+margin_bottom = 24.0
+size_flags_horizontal = 3
+text = "ExcludeFromNavmesh"
+
+[node name="Preview" type="TextureRect" parent="HSplitter/VBoxLeft"]
+visible = false
+margin_top = 90.0
+margin_right = 128.0
+margin_bottom = 218.0
+rect_min_size = Vector2( 128, 128 )
+size_flags_horizontal = 0
+size_flags_vertical = 0
+texture = ExtResource( 2 )
+expand = true
+stretch_mode = 1
+
+[node name="VBoxRIght" type="VBoxContainer" parent="HSplitter"]
+margin_left = 312.0
+margin_right = 567.0
+margin_bottom = 270.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HSplitter/VBoxRIght"]
+margin_right = 255.0
+margin_bottom = 23.0
+
+[node name="Welcome" type="Button" parent="HSplitter/VBoxRIght/HBoxContainer"]
+margin_right = 73.0
+margin_bottom = 23.0
+text = "Welcome"
+
+[node name="GenerateButton" type="Button" parent="HSplitter/VBoxRIght/HBoxContainer"]
+margin_left = 77.0
+margin_right = 227.0
+margin_bottom = 23.0
+rect_min_size = Vector2( 150, 0 )
+text = "Generate"
+
+[node name="GenerateInfo" type="Button" parent="HSplitter/VBoxRIght/HBoxContainer"]
+margin_left = 231.0
+margin_right = 247.0
+margin_bottom = 23.0
+icon = ExtResource( 3 )
+
+[node name="ProgressBar" type="ProgressBar" parent="HSplitter/VBoxRIght/HBoxContainer"]
+margin_left = 251.0
+margin_right = 255.0
+margin_bottom = 23.0
+rect_min_size = Vector2( 0, 23 )
+size_flags_horizontal = 3
+
+[node name="Panel" type="ScrollContainer" parent="HSplitter/VBoxRIght"]
+margin_top = 27.0
+margin_right = 255.0
+margin_bottom = 270.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="InfoLabel" type="RichTextLabel" parent="HSplitter/VBoxRIght/Panel"]
+margin_right = 255.0
+margin_bottom = 243.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+bbcode_enabled = true
+[connection signal="pressed" from="HSplitter/VBoxLeft/AgentRadius/AgentRadiusInfo" to="." method="_on_AgentRadiusInfo_pressed"]
+[connection signal="pressed" from="HSplitter/VBoxLeft/Smoothing/SmoothingInfo" to="." method="_on_SmoothingInfo_pressed"]
+[connection signal="pressed" from="HSplitter/VBoxLeft/Simplify/SimplifyInfo" to="." method="_on_SimplifyInfo_pressed"]
+[connection signal="pressed" from="HSplitter/VBoxLeft/ExcludeGroup/ExcludeGroupInfo" to="." method="_on_ExcludeGroupInfo_pressed"]
+[connection signal="pressed" from="HSplitter/VBoxRIght/HBoxContainer/Welcome" to="." method="_on_Welcome_pressed"]
+[connection signal="pressed" from="HSplitter/VBoxRIght/HBoxContainer/GenerateButton" to="." method="_on_Button_pressed"]
+[connection signal="pressed" from="HSplitter/VBoxRIght/HBoxContainer/GenerateInfo" to="." method="_on_GenerateInfo_pressed"]
