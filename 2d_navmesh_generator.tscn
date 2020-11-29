@@ -45,7 +45,7 @@ __meta__ = {
 
 [node name="VBoxLeft" type="VBoxContainer" parent="HSplitter"]
 margin_right = 300.0
-margin_bottom = 270.0
+margin_bottom = 600.0
 rect_min_size = Vector2( 300, 0 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -102,7 +102,7 @@ text = "Smoothing"
 
 [node name="HSlider" type="HSlider" parent="HSplitter/VBoxLeft/Smoothing"]
 margin_left = 92.0
-margin_right = 288.0
+margin_right = 268.0
 margin_bottom = 16.0
 size_flags_horizontal = 3
 max_value = 1.0
@@ -110,11 +110,11 @@ step = 0.01
 value = 0.5
 
 [node name="Value" type="Label" parent="HSplitter/VBoxLeft/Smoothing"]
-margin_left = 292.0
+margin_left = 272.0
 margin_top = 4.0
 margin_right = 300.0
 margin_bottom = 18.0
-text = "1"
+text = "0.50"
 
 [node name="Simplify" type="HBoxContainer" parent="HSplitter/VBoxLeft"]
 margin_top = 52.0
@@ -135,7 +135,7 @@ text = "Simplify"
 
 [node name="HSlider" type="HSlider" parent="HSplitter/VBoxLeft/Simplify"]
 margin_left = 75.0
-margin_right = 288.0
+margin_right = 268.0
 margin_bottom = 16.0
 size_flags_horizontal = 3
 max_value = 1.0
@@ -143,11 +143,11 @@ step = 0.01
 value = 0.5
 
 [node name="Value" type="Label" parent="HSplitter/VBoxLeft/Simplify"]
-margin_left = 292.0
+margin_left = 272.0
 margin_top = 4.0
 margin_right = 300.0
 margin_bottom = 18.0
-text = "1"
+text = "0.50"
 
 [node name="ExcludeGroup" type="HBoxContainer" parent="HSplitter/VBoxLeft"]
 margin_top = 78.0
@@ -187,11 +187,11 @@ stretch_mode = 1
 
 [node name="VBoxRIght" type="VBoxContainer" parent="HSplitter"]
 margin_left = 312.0
-margin_right = 567.0
-margin_bottom = 270.0
+margin_right = 1024.0
+margin_bottom = 600.0
 
 [node name="HBoxContainer" type="HBoxContainer" parent="HSplitter/VBoxRIght"]
-margin_right = 255.0
+margin_right = 712.0
 margin_bottom = 23.0
 
 [node name="Welcome" type="Button" parent="HSplitter/VBoxRIght/HBoxContainer"]
@@ -214,21 +214,21 @@ icon = ExtResource( 3 )
 
 [node name="ProgressBar" type="ProgressBar" parent="HSplitter/VBoxRIght/HBoxContainer"]
 margin_left = 251.0
-margin_right = 255.0
+margin_right = 712.0
 margin_bottom = 23.0
 rect_min_size = Vector2( 0, 23 )
 size_flags_horizontal = 3
 
 [node name="Panel" type="ScrollContainer" parent="HSplitter/VBoxRIght"]
 margin_top = 27.0
-margin_right = 255.0
-margin_bottom = 270.0
+margin_right = 712.0
+margin_bottom = 600.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="InfoLabel" type="RichTextLabel" parent="HSplitter/VBoxRIght/Panel"]
-margin_right = 255.0
-margin_bottom = 243.0
+margin_right = 712.0
+margin_bottom = 573.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 bbcode_enabled = true

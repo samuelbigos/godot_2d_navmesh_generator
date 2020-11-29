@@ -215,7 +215,7 @@ func generate():
 			space_max.x = max(space_max.x, pos.x + radius)
 			space_max.y = max(space_max.y, pos.y + radius)
 		
-	var margin = Vector2(10, 10) + Vector2(agent_radius, agent_radius)
+	var margin = Vector2(100, 100) + Vector2(agent_radius, agent_radius)
 	var viewport_size = space_max - space_min + margin
 	viewport_size.x = int(max(viewport_size.x, viewport_size.y))
 	viewport_size.y = int(viewport_size.x)
@@ -400,7 +400,7 @@ func worker_job(worker_data):
 				var new_path := PoolVector2Array()
 				var baked_length = curve.get_baked_length()
 				var offset = 0.0
-				var step = 1.0
+				var step = 2.0
 				while offset < baked_length - (step * 2.0):
 					new_path.append(curve.interpolate_baked(offset, true))
 					offset += step
