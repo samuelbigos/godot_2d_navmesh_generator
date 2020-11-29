@@ -383,8 +383,6 @@ func worker_job(worker_data):
 			if boundary_data[x][y] == 1:
 				var vec_array = gen_verts_from_start(Vector2(x, y), width, height, boundary_data)
 				
-				print(vec_array.size())
-				
 				var curve = Curve2D.new()
 				for i in range(0, vec_array.size()):
 					var c0 = Vector2(0.0, 0.0)
@@ -532,7 +530,6 @@ func optimise_boundary(boundary):
 	var threshold_min = 0.95
 	var threshold_max = 0.99999
 	var threshold = lerp(threshold_min, threshold_max, 1.0 - pow(gui_simplify_slider.value, 2))
-	print(threshold)
 	var size = boundary.size()
 	var new = []
 	var i = 0
