@@ -23,6 +23,10 @@ If you're not tracking on Git, download the repo and place into the 'addons/godo
 3. In the bottom panel you should see a tab _NavmeshGen_. Click it.
 4. Use this menu to generate a mesh for your _NavigatonPolygon_.
 
+## Demo
+
+A demo project is included (_2d_navmesh_generator_demo.zip_), it includes basic navmesh agent and some collision shapes to generate a navmesh from.
+
 ## Known Issues and Gotchas
 
 - 'Holes' in topology are not supported (yet). This means if you have a donut shape, the hole will be filled in. The solution for now is to leave a gap somewhere (and make it big enough for your agent width), then fill in the gap manually.

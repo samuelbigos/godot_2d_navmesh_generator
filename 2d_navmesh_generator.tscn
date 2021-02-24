@@ -45,7 +45,7 @@ __meta__ = {
 
 [node name="VBoxLeft" type="VBoxContainer" parent="HSplitter"]
 margin_right = 300.0
-margin_bottom = 600.0
+margin_bottom = 540.0
 rect_min_size = Vector2( 300, 0 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -187,11 +187,11 @@ stretch_mode = 1
 
 [node name="VBoxRIght" type="VBoxContainer" parent="HSplitter"]
 margin_left = 312.0
-margin_right = 1024.0
-margin_bottom = 600.0
+margin_right = 960.0
+margin_bottom = 540.0
 
 [node name="HBoxContainer" type="HBoxContainer" parent="HSplitter/VBoxRIght"]
-margin_right = 712.0
+margin_right = 648.0
 margin_bottom = 23.0
 
 [node name="Welcome" type="Button" parent="HSplitter/VBoxRIght/HBoxContainer"]
@@ -214,21 +214,21 @@ icon = ExtResource( 3 )
 
 [node name="ProgressBar" type="ProgressBar" parent="HSplitter/VBoxRIght/HBoxContainer"]
 margin_left = 251.0
-margin_right = 712.0
+margin_right = 648.0
 margin_bottom = 23.0
 rect_min_size = Vector2( 0, 23 )
 size_flags_horizontal = 3
 
 [node name="Panel" type="ScrollContainer" parent="HSplitter/VBoxRIght"]
 margin_top = 27.0
-margin_right = 712.0
-margin_bottom = 600.0
+margin_right = 648.0
+margin_bottom = 540.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="InfoLabel" type="RichTextLabel" parent="HSplitter/VBoxRIght/Panel"]
-margin_right = 712.0
-margin_bottom = 573.0
+margin_right = 648.0
+margin_bottom = 513.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 bbcode_enabled = true
